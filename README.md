@@ -34,6 +34,13 @@ Run the test suite against an in-memory store instead of the database with
 ## Deployment
 
 **Vercel (web) + Supabase (database)** — see `DEPLOY.md` for the full walkthrough.
+
+The two tasks deploy as **two sites from this one repo**, distinguished by the
+`TASK` environment variable (`he1` / `he2`), sharing a single database. Each
+site serves only its own task, its own definition, and its own three training
+examples; the other task's API returns 404. Annotator IDs and the coordinator
+console are shared. `TASK=both` gives the combined single-site version.
+
 `vercel.json` serves `public/` statically and routes every `/api/*` request to
 the single function in `api/index.js`, which is the same handler the local
 server uses. `supabase/schema.sql` creates the tables, the analysis views, and
@@ -50,6 +57,7 @@ Environment variables (all server-side):
 | `SUPABASE_SERVICE_ROLE_KEY` | **secret** — bypasses RLS, never expose to a browser |
 | `ADMIN_TOKEN` | coordinator password for `/admin.html` |
 | `ACCESS_CODE` | shared code annotators type on the first screen (optional) |
+| `TASK` | `he1`, `he2`, or `both` — which evaluation this deployment hosts |
 | `SESSION_SECRET` | optional; derived from the service key if unset |
 
 ### Where the responses go
@@ -72,12 +80,12 @@ Supabase keeps its own backups; take this one too, daily, while collection runs.
 ## How it works
 
 ### Annotator flow
-`Sign in (ID + access code) → consent → guidelines → 6 training examples →
-HE1 (all 72 abstracts) → HE2 (360 pairs)`
+`Sign in (ID + access code) → consent → guidelines → training with feedback →
+the task (72 abstracts, or 360 pairs)`
 
-HE2 unlocks only after HE1 is finished (`enforceTaskOrder`), so pairwise
-identity judgments cannot teach annotators pipeline-style concept boundaries
-before the coverage task.
+The two tasks are independent sites and can be run in either order, or by
+different people. Setting `enforceTaskOrder` true on a `TASK=both` deployment
+restores the original gate, where HE2 opens only after HE1 is finished.
 
 ### Blinding
 Annotators never receive, in any API response:

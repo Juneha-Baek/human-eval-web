@@ -24,6 +24,14 @@
   document.getElementById('bar').innerHTML = topbar('', me);
   const task = new URLSearchParams(location.search).get('task') || 'he1';
   const h = document.getElementById('h'), sub = document.getElementById('sub'), act = document.getElementById('actions');
+  if (me.task !== 'both') {
+    const n = me.task === 'he1' ? me.he1.total : me.he2.total;
+    h.textContent = 'All items finished';
+    sub.textContent = `You completed all ${n} items. Thank you — your work is saved. `
+      + 'You may close this window; let the coordinator know you are done.';
+    act.innerHTML = `<a class="btn" href="/">Overview</a>`;
+    return;
+  }
   if (task === 'he1' && !me.he2.finished) {
     h.textContent = 'Evaluation 1 finished';
     sub.textContent = `You annotated ${me.he1.total} abstracts. Evaluation 2 is now open: ${me.he2.total} pairs of expressions.`;

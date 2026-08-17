@@ -13,14 +13,14 @@
     <div style="text-align:center;margin-bottom:26px">
       <div class="pill grey" id="protoPill">PROTOCOL</div>
       <h1 style="font-size:29px;margin-top:12px">Human Annotation Study</h1>
-      <p class="lede">Scientific Concept Measurement</p>
+      <p class="lede" id="subtitle">Scientific Concept Measurement</p>
     </div>
 
     <div class="panel">
-      <p>This study collects human judgments about the scientific concepts contained in
+      <p id="blurb">This study collects human judgments about the scientific concepts contained in
       research abstracts, and about when two scientific expressions should be treated as
       <em>one and the same concept</em>.</p>
-      <p class="small muted">You will work through two tasks. Everything is saved automatically;
+      <p class="small muted" id="blurb2">You will work through two tasks. Everything is saved automatically;
       you may stop at any point and continue later with the same ID.</p>
 
       <label class="field" id="codeField" style="margin-top:18px;display:none">
@@ -105,16 +105,35 @@ function renderHub() {
   const he1Status = m.he1.finished ? doneP : `<span class="pill">${m.he1.done}/${m.he1.total} · ${pct(m.he1)}%</span>`;
   const he2Status = m.he2.finished ? doneP : `<span class="pill">${m.he2.done}/${m.he2.total} · ${pct(m.he2)}%</span>`;
 
+  const showHE1 = m.task !== 'he2';
+  const showHE2 = m.task !== 'he1';
+  const single = m.task !== 'both';
+  let n = 1;
+  const steps = [
+    stepRow('0', 'Guidelines', single
+      ? 'The fixed definition this task rests on. Read once, return any time.'
+      : 'The two fixed definitions used throughout the study. Read once, return any time.',
+      `<span class="pill grey">Reference</span>`, 'guidelines.html', true),
+    stepRow(String(n++), 'Training', `${m.training_total} worked examples with feedback. Required before the task.`,
+      trainingStatus, 'training.html', true)
+  ];
+  if (showHE1) {
+    steps.push(stepRow(String(n++), single ? 'Concept Coverage' : 'Human Evaluation 1 — Concept Coverage',
+      'Record the distinct scientific concepts in each abstract.', he1Status, 'he1.html', m.tasks_unlocked));
+  }
+  if (showHE2) {
+    steps.push(stepRow(String(n++), single ? 'Concept Identity' : 'Human Evaluation 2 — Concept Identity',
+      'Judge whether two expressions refer to the same scientific concept.',
+      he2Status, 'he2.html', m.tasks_unlocked && m.he2_unlocked));
+  }
+
   document.getElementById('hub').innerHTML = `
     <div style="margin-bottom:22px">
       <h1>Welcome, ${esc(m.annotator_id)}</h1>
       <p class="lede">Work through the steps in order. Progress is saved after every item.</p>
     </div>
-    ${stepRow('0', 'Guidelines', 'The two fixed definitions used throughout the study. Read once, return any time.', `<span class="pill grey">Reference</span>`, 'guidelines.html', true)}
-    ${stepRow('1', 'Training', 'Ten worked examples with feedback. Required before the main tasks.', trainingStatus, 'training.html', true)}
-    ${stepRow('2', 'Human Evaluation 1 — Concept Coverage', 'Highlight the distinct scientific concepts in each abstract.', he1Status, 'he1.html', m.tasks_unlocked)}
-    ${stepRow('3', 'Human Evaluation 2 — Concept Identity', 'Judge whether two expressions refer to the same scientific concept.', he2Status, 'he2.html', m.tasks_unlocked && m.he2_unlocked)}
-    ${(!m.he2_unlocked && m.tasks_unlocked) ? `<p class="small muted">Evaluation 2 unlocks when Evaluation 1 is finished.</p>` : ''}
+    ${steps.join('')}
+    ${(showHE2 && !m.he2_unlocked && m.tasks_unlocked) ? `<p class="small muted">Evaluation 2 unlocks when Evaluation 1 is finished.</p>` : ''}
     <div class="row" style="margin-top:20px">
       <button class="ghost" onclick="signOut()">Sign out</button>
     </div>`;
@@ -160,6 +179,19 @@ document.getElementById('cgo').onclick = async () => {
 apiGet('/api/config').then(c => {
   document.getElementById('protoPill').textContent = 'PROTOCOL ' + c.protocol_version;
   document.title = c.study_title;
+  if (c.task === 'he1') {
+    document.getElementById('subtitle').textContent = 'Task 1 — Concept Coverage';
+    document.getElementById('blurb').innerHTML =
+      'This task collects human judgments about which reusable <em>scientific concepts</em> a research abstract contains.';
+    document.getElementById('blurb2').textContent =
+      'You read abstracts and record the concepts in each. Everything is saved automatically; you may stop at any point and continue later with the same ID.';
+  } else if (c.task === 'he2') {
+    document.getElementById('subtitle').textContent = 'Task 2 — Concept Identity';
+    document.getElementById('blurb').innerHTML =
+      'This task collects human judgments about when two scientific expressions should be treated as <em>one and the same concept</em>.';
+    document.getElementById('blurb2').textContent =
+      'You compare pairs of expressions in context. Everything is saved automatically; you may stop at any point and continue later with the same ID.';
+  }
   if (c.require_access_code) {
     document.getElementById('codeField').style.display = '';
     document.getElementById('acode').focus();

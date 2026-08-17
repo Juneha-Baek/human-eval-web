@@ -54,16 +54,25 @@ gh repo create human-eval-web --private --source=. --remote=origin --push
 
 ---
 
-## Step 4 — Vercel (the web app)
+## Step 4 — Vercel: **two projects from the same repo**
+
+The two tasks run as separate sites over one shared database. Import the same
+repository twice; the only difference is the `TASK` variable.
+
+For **each** project:
 
 1. <https://vercel.com> → sign in with GitHub → **Add New… → Project** → import
    `human-eval-web`.
-2. Framework preset: **Other**. Leave build/install commands empty —
+2. Project name: `concept-coverage` for the first, `concept-identity` for the
+   second.
+3. Framework preset: **Other**. Leave build/install commands empty —
    `vercel.json` already declares everything (static files from `public/`, one
    serverless function at `api/index.js`, all `/api/*` routed to it).
-3. **Environment Variables** — add four, for all environments:
+4. **Environment Variables** — five, identical across both projects except the
+   first line:
 
    ```
+   TASK                         he1          ← "he2" in the second project
    SUPABASE_URL                 https://xxxx.supabase.co
    SUPABASE_SERVICE_ROLE_KEY    (from Supabase)
    ADMIN_TOKEN                  d8jC_pZqAxCNBElBCNu9TfDNDK-41Ci8
@@ -73,17 +82,35 @@ gh repo create human-eval-web --private --source=. --remote=origin --push
    (The last two were generated for you; change them if you like. `ACCESS_CODE`
    is what annotators type on the first screen; `ADMIN_TOKEN` is your
    coordinator password.)
-4. **Deploy.** You get `https://human-eval-web-xxxx.vercel.app`.
+5. **Deploy.**
+
+You end up with two URLs, e.g.
+`https://concept-coverage.vercel.app` and `https://concept-identity.vercel.app`.
+
+What the split does:
+
+* each site shows only its own task, its own definition on the guidelines page,
+  and only the three training examples that belong to it
+* the `/api/*` route of the other task returns 404 on the wrong site
+* the same annotator ID works on both sites — consent, IDs and the coordinator
+  console are shared, because both read one Supabase project
+* the two can be run independently, in either order, by the same or different
+  people
+
+The coordinator console (`/admin.html`) is available on both sites and always
+shows the whole study, both tasks.
 
 Free tier is sufficient: the function only reads and writes small rows, and
-cold starts are a few hundred milliseconds. Later pushes redeploy automatically.
+cold starts are a few hundred milliseconds. Later pushes redeploy both projects.
+
+> Want one combined site instead? Deploy once with `TASK=both`.
 
 ---
 
 ## Step 5 — check before inviting anyone
 
-1. Open the URL, enter the access code and a throwaway ID such as `TEST99`.
-2. Training → one HE1 abstract → confirm it saves, reload, confirm it resumes.
+1. Open **each** URL, enter the access code and a throwaway ID such as `TEST99`.
+2. Training → one item → confirm it saves, reload, confirm it resumes.
 3. In Supabase → **Table Editor → he1_responses**, confirm the row is there.
 4. Open `/admin.html`, sign in with `ADMIN_TOKEN`, confirm `TEST99` appears.
 5. **Progress** tab → `reset` next to `TEST99`. That archives their work into
@@ -95,12 +122,13 @@ cold starts are a few hundred milliseconds. Later pushes redeploy automatically.
 
 Give each person their own ID plus the shared link and code:
 
-> Link: https://human-eval-web-xxxx.vercel.app
+> Task 1 — Concept Coverage: https://concept-coverage.vercel.app
+> Task 2 — Concept Identity: https://concept-identity.vercel.app
 > Access code: concept-3a634db4
 > Your annotator ID: **A01**
 >
-> Please use exactly this ID — it is how your work is saved and resumed.
-> Two tasks, several sessions; you can stop and return at any time.
+> Use exactly this ID on both sites — it is how your work is saved and resumed.
+> Each site has its own short training. You can stop and return at any time.
 
 Assign IDs yourself (`A01`, `A02`, …). Two annotators is the design: both get
 all 72 abstracts and all 360 pairs, each in a different randomized order.
@@ -113,7 +141,7 @@ all 72 abstracts and all 360 pairs, each in a different randomized order.
 
 ```bash
 curl -H "X-Admin-Token: $ADMIN_TOKEN" \
-     "https://human-eval-web-xxxx.vercel.app/api/admin/export?what=backup" \
+     "https://concept-coverage.vercel.app/api/admin/export?what=backup" \
      -o he_backup_$(date +%F).json
 ```
 

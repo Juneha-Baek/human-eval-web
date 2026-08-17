@@ -10,8 +10,8 @@
 <div id="bar"></div>
 <div class="wrap narrow">
   <h1>Training</h1>
-  <p class="lede">Ten worked examples. Answer each one, then read the explanation.
-  Feedback is given here only — during the main tasks there is none.</p>
+  <p class="lede" id="lede">Worked examples. Answer each one, then read the explanation.
+  Feedback is given here only — during the main task there is none.</p>
   <div class="progress-line" style="margin:16px 0 20px">
     <span id="ptxt" class="mono">0 / 0</span>
     <div class="bar"><i id="pbar" style="width:0%"></i></div>
@@ -23,7 +23,7 @@
         <strong>Training complete</strong>
         <div class="small muted" id="score"></div>
       </div>
-      <button class="primary" id="done">Start Evaluation 1</button>
+      <button class="primary" id="done">Start annotating</button>
     </div>
   </div>
 </div>
@@ -111,7 +111,7 @@ function render() {
 
 document.getElementById('done').onclick = async () => {
   await apiPost('/api/training/complete');
-  location.href = 'he1.html';
+  location.href = (ME && ME.task === 'he2') ? 'he2.html' : 'he1.html';
 };
 
 (async function () {
@@ -120,6 +120,13 @@ document.getElementById('done').onclick = async () => {
   document.getElementById('bar').innerHTML = topbar('training.html', ME);
   const t = await apiGet('/api/training/items');
   ITEMS = t.items;
+  const words = { 3: 'Three', 6: 'Six', 10: 'Ten' }[ITEMS.length] || ITEMS.length;
+  document.getElementById('lede').textContent =
+    `${words} worked examples. Answer each one, then read the explanation. ` +
+    'Feedback is given here only — during the main task there is none.';
+  document.getElementById('done').textContent =
+    ME.task === 'he2' ? 'Start Concept Identity'
+      : ME.task === 'he1' ? 'Start Concept Coverage' : 'Start Evaluation 1';
   render();
 })();
 </script>

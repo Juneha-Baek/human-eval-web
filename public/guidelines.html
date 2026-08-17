@@ -41,8 +41,12 @@
     `<tr><td style="white-space:nowrap"><span class="pill grey">${esc(c.id)}</span></td>
          <td>${esc(c.title)}${c.example ? ` <span class="small muted" style="font-family:var(--serif)">— ${esc(c.example)}</span>` : ''}</td></tr>`).join('');
 
-  document.getElementById('body').innerHTML = `
-    <h2>1 · What counts as a scientific concept</h2>
+  const showHE1 = me.task !== 'he2';
+  const showHE2 = me.task !== 'he1';
+  const n = (a, b) => me.task === 'both' ? a : b;
+
+  const section1 = `
+    <h2>${n('1 · ', '')}What counts as a scientific concept</h2>
     <div class="definition">
       <div class="term">${esc(sc.term)}</div>
       <div>${esc(sc.definition)}</div>
@@ -57,9 +61,10 @@
     </div>
 
     <div class="panel tight"><table><tbody>${sc.boundary_rules.map(rule).join('')}</tbody></table></div>
-    <p class="small muted">${esc(sc.occurrence_rule)} ${esc(sc.wording_rule || '')}</p>
+    <p class="small muted">${esc(sc.occurrence_rule)} ${esc(sc.wording_rule || '')}</p>`;
 
-    <h2>2 · When two expressions are the same concept</h2>
+  const section2 = `
+    <h2>${n('2 · ', '')}When two expressions are the same concept</h2>
     <div class="definition">
       <div class="term">${esc(sm.term)}</div>
       <div>${esc(sm.definition)}</div>
@@ -73,18 +78,25 @@
       <table><tbody>${sameEx}</tbody></table>
       <h3>Different — any one of these</h3>
       <table><tbody>${diffCrit}</tbody></table>
-    </div>
+    </div>`;
 
-    <h2>3 · The two tasks</h2>
-    <div class="panel tight">
-      <table><tbody>
-        <tr><td style="white-space:nowrap"><strong>Evaluation 1</strong></td>
-            <td>${esc(P.he1.instruction)}</td></tr>
-        <tr><td style="white-space:nowrap"><strong>Evaluation 2</strong></td>
-            <td>${esc(P.he2.primary_question)} If different, you are asked which relation fits. Judge the expressions as used in the contexts shown.</td></tr>
-      </tbody></table>
-    </div>
+  const taskRows = [];
+  if (showHE1) taskRows.push(`<tr><td style="white-space:nowrap"><strong>${n('Evaluation 1', 'This task')}</strong></td>
+      <td>${esc(P.he1.instruction)}</td></tr>`);
+  if (showHE2) taskRows.push(`<tr><td style="white-space:nowrap"><strong>${n('Evaluation 2', 'This task')}</strong></td>
+      <td>${esc(P.he2.primary_question)} If different, you are asked which relation fits. Judge the expressions as used in the contexts shown.</td></tr>`);
+
+  document.getElementById('body').innerHTML = `
+    ${showHE1 ? section1 : ''}
+    ${showHE2 ? section2 : ''}
+    <h2>${n('3 · The two tasks', 'The task')}</h2>
+    <div class="panel tight"><table><tbody>${taskRows.join('')}</tbody></table></div>
     <p class="small muted">Protocol ${esc(P.version)} · frozen ${esc(P.frozen_at)}</p>`;
+
+  if (me.task !== 'both') {
+    document.querySelector('.lede').textContent =
+      'One definition governs this task. Everything else is a rule for applying it consistently.';
+  }
 })();
 </script>
 </body>

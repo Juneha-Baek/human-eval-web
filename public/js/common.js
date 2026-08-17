@@ -40,15 +40,19 @@ function toast(msg) {
 }
 
 function topbar(active, me) {
+  const task = (me && me.task) || 'both';
   const links = [
     ['guidelines.html', 'Guidelines'],
-    ['training.html', 'Training'],
-    ['he1.html', 'Evaluation 1'],
-    ['he2.html', 'Evaluation 2']
+    ['training.html', 'Training']
   ];
+  if (task !== 'he2') links.push(['he1.html', task === 'he1' ? 'Annotation' : 'Evaluation 1']);
+  if (task !== 'he1') links.push(['he2.html', task === 'he2' ? 'Annotation' : 'Evaluation 2']);
+  const brand = task === 'he1' ? 'Concept Coverage Study'
+    : task === 'he2' ? 'Concept Identity Study'
+    : 'Concept Measurement Study';
   return `
   <div class="topbar">
-    <div class="brand">Concept Measurement Study<small>PROTOCOL ${esc(me && me.protocol_version || '')}</small></div>
+    <div class="brand">${brand}<small>PROTOCOL ${esc(me && me.protocol_version || '')}</small></div>
     <nav>${links.map(([h, t]) => `<a href="${h}" class="${active === h ? 'active' : ''}">${t}</a>`).join('')}</nav>
     <div class="spacer"></div>
     <div class="who">${me ? esc(me.annotator_id) : ''}</div>
@@ -72,6 +76,10 @@ async function requireSession(opts) {
     return null;
   }
   if (me.consent_required && !me.consent_at) { location.href = '/'; return null; }
+  if (opts.task && me.task !== 'both' && me.task !== opts.task) {
+    location.href = '/';           // this page belongs to the other site
+    return null;
+  }
   if (opts.needTraining && me.training_required && !me.training_done) {
     location.href = 'training.html';
     return null;

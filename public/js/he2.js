@@ -165,7 +165,7 @@ async function nextItem() {
 }
 
 (async function () {
-  ME = await requireSession({ needTraining: true });
+  ME = await requireSession({ needTraining: true, task: 'he2' });
   if (!ME) return;
   document.getElementById('bar').innerHTML = topbar('he2.html', ME);
   P = await apiGet('/api/protocol');

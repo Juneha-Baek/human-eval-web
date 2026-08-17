@@ -288,7 +288,7 @@ async function nextItem() {
 
 /* ------------------------------------------------------------------ init */
 (async function () {
-  ME = await requireSession({ needTraining: true });
+  ME = await requireSession({ needTraining: true, task: 'he1' });
   if (!ME) return;
   document.getElementById('bar').innerHTML = topbar('he1.html', ME);
 
