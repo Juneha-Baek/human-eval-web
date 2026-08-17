@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evaluation 2 — Concept Identity</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div id="bar"></div>
+<div class="wrap">
+  <div class="row" style="margin-bottom:14px">
+    <div style="flex:1">
+      <h1 style="margin-bottom:2px">Human Evaluation 2 — Concept Identity</h1>
+      <p class="lede small" style="margin:0" id="pairCount"></p>
+    </div>
+    <button class="small" id="helpBtn">Definition</button>
+  </div>
+
+  <div class="panel tight" id="help" style="display:none"></div>
+
+  <div class="pair-grid" style="margin-bottom:22px">
+    <div class="side">
+      <div class="side-tag">Concept A</div>
+      <div class="label" id="labL"></div>
+      <div class="ctx-head">Context</div>
+      <div class="ctx" id="ctxL"></div>
+      <div class="small muted" id="noteL" style="display:none;margin-top:8px">
+        The expression does not appear verbatim in this sentence; judge it as the concept the sentence is about.</div>
+    </div>
+    <div class="side">
+      <div class="side-tag">Concept B</div>
+      <div class="label" id="labR"></div>
+      <div class="ctx-head">Context</div>
+      <div class="ctx" id="ctxR"></div>
+      <div class="small muted" id="noteR" style="display:none;margin-top:8px">
+        The expression does not appear verbatim in this sentence; judge it as the concept the sentence is about.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div style="font-weight:640;font-size:16px;margin-bottom:4px" id="q1"></div>
+    <p class="small muted" style="margin-bottom:14px">
+      Judge the expressions as they are used in the contexts shown.
+      <em>Same</em> does not mean similar, related, or on the same topic.
+    </p>
+    <div class="choice-row" id="choices"></div>
+
+    <div id="q2wrap" style="display:none;margin-top:22px;border-top:1px solid var(--line);padding-top:18px">
+      <div style="font-weight:640;margin-bottom:10px" id="q2"></div>
+      <div class="radio-list" id="relOpts"></div>
+
+      <div id="q3wrap" style="display:none;margin-top:18px">
+        <div style="font-weight:640;margin-bottom:10px" id="q3"></div>
+        <div class="radio-list" id="dirOpts"></div>
+      </div>
+    </div>
+
+    <details style="margin-top:18px">
+      <summary class="small muted" style="cursor:pointer">Add a note (optional)</summary>
+      <textarea id="notes" placeholder="Why this pair was hard, or what you relied on." style="margin-top:8px"></textarea>
+    </details>
+  </div>
+
+  <div class="panel tight">
+    <div class="small muted">
+      <strong>Collapse test.</strong> <span id="collapseTest"></span>
+    </div>
+  </div>
+</div>
+
+<div class="footbar">
+  <div class="inner">
+    <button id="prev">← Previous</button>
+    <div class="progress-line" style="flex:1">
+      <span class="mono" id="ptxt"></span>
+      <div class="bar"><i id="pbar" style="width:0%"></i></div>
+    </div>
+    <span class="small muted"><span class="kbd">1</span><span class="kbd">2</span><span class="kbd">3</span> · <span class="kbd">Ctrl</span>+<span class="kbd">Enter</span></span>
+    <button class="primary" id="next">Save &amp; Next</button>
+  </div>
+</div>
+
+<script src="js/common.js"></script>
+<script src="js/he2.js"></script>
+</body>
+</html>

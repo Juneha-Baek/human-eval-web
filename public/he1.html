@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evaluation 1 — Concept Coverage</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div id="bar"></div>
+<div class="wrap">
+  <div class="row" style="margin-bottom:14px">
+    <div style="flex:1">
+      <h1 style="margin-bottom:2px">Human Evaluation 1 — Concept Coverage</h1>
+      <p class="lede small" style="margin:0">Highlight each distinct scientific concept in the abstract.</p>
+    </div>
+    <button class="small" id="helpBtn">Definition</button>
+  </div>
+
+  <div class="panel tight" id="help" style="display:none"></div>
+
+  <div class="two-col">
+    <div>
+      <div class="panel">
+        <div class="row small muted" style="margin-bottom:6px">
+          <span id="paperCount"></span>
+          <span class="right" id="dupFlag"></span>
+        </div>
+        <div class="paper-title" id="title"></div>
+        <div class="small muted" id="meta" style="margin-bottom:16px"></div>
+        <div class="abstract" id="abs"></div>
+      </div>
+
+      <div class="panel tight">
+        <label class="row small" style="gap:8px;cursor:pointer">
+          <input type="checkbox" id="noConcepts" style="width:auto">
+          <span>This abstract contains no reusable scientific concepts.</span>
+        </label>
+        <details style="margin-top:8px">
+          <summary class="small muted" style="cursor:pointer">Add a note (optional)</summary>
+          <textarea id="notes" placeholder="Anything the coordinator should know about this abstract."
+                    style="margin-top:8px"></textarea>
+        </details>
+      </div>
+    </div>
+
+    <div class="sticky-side">
+      <div class="panel">
+        <div class="row" style="margin-bottom:8px">
+          <strong style="flex:1">Selected concepts</strong>
+          <span class="pill grey" id="nSel">0</span>
+        </div>
+        <p class="small muted" id="emptyHint">
+          Drag across the abstract to select a concept. Click a highlight to remove it.
+        </p>
+        <ul class="concept-list" id="list"></ul>
+      </div>
+
+      <div class="panel tight">
+        <h3 style="margin-top:0">Reminders</h3>
+        <ul class="small muted" style="margin:0;padding-left:18px">
+          <li>Split claims: <em>the effect of X on Y</em> → <em>X</em>, <em>Y</em>.</li>
+          <li>Keep the minimal expression that preserves the concept.</li>
+          <li>Keep qualifiers that change the theoretical referent.</li>
+          <li>Skip methods, data, samples and result talk.</li>
+          <li>One occurrence per distinct concept is enough.</li>
+        </ul>
+      </div>
+
+      <div class="panel tight">
+        <h3 style="margin-top:0">Your queue</h3>
+        <div id="map" style="display:grid;grid-template-columns:repeat(12,1fr);gap:3px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footbar">
+  <div class="inner">
+    <button id="prev">← Previous</button>
+    <div class="progress-line" style="flex:1">
+      <span class="mono" id="ptxt"></span>
+      <div class="bar"><i id="pbar" style="width:0%"></i></div>
+    </div>
+    <span class="small muted"><span class="kbd">Ctrl</span>+<span class="kbd">Enter</span></span>
+    <button class="primary" id="next">Save &amp; Next</button>
+  </div>
+</div>
+
+<script src="js/common.js"></script>
+<script src="js/he1.js"></script>
+</body>
+</html>

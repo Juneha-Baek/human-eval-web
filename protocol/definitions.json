@@ -1,0 +1,109 @@
+{
+  "version": "v1.0-frozen",
+  "frozen_at": "2026-08-17",
+  "note": "These two definitions are the fixed measurement definitions of the annotation protocol. They must not be edited once data collection has started. Any edit requires a new protocol version and a new data collection round.",
+
+  "scientific_concept": {
+    "term": "Scientific Concept",
+    "definition": "A scientific concept is a reusable theoretical or substantive referent that can be meaningfully recognized and discussed across studies, independently of the particular claim, dataset, method, sample, or empirical setting in which it appears.",
+    "scope": "Concepts may include theoretical constructs, theories or perspectives, substantive phenomena, processes, states, or mechanisms.",
+    "operational_test": {
+      "name": "Independent-referent test",
+      "text": "If the surrounding claim and study-specific context were removed, would this expression still denote a recognizable scientific idea that another study could meaningfully discuss or investigate?"
+    },
+    "include_examples": [
+      "trust",
+      "information asymmetry",
+      "habit formation",
+      "international expansion",
+      "Penrosean perspective",
+      "organizational commitment"
+    ],
+    "exclude_examples": [
+      "data",
+      "sample",
+      "respondents",
+      "two-stage least squares",
+      "our results",
+      "the effect of X on Y"
+    ],
+    "method_rule": "Do not mark an empirical or statistical method unless the method itself is the focal object of scientific inquiry.",
+    "boundary_rules": [
+      {
+        "id": "A",
+        "title": "Do not select the whole claim",
+        "text": "A relationship phrase is not a concept. From “the effect of trust on technology adoption”, select “trust” and “technology adoption” separately.",
+        "example_source": "the effect of trust on technology adoption",
+        "example_select": ["trust", "technology adoption"]
+      },
+      {
+        "id": "B",
+        "title": "Select the minimal expression that preserves the concept",
+        "text": "In “information asymmetry in online marketplaces”, if “online marketplaces” is only an application setting, select “information asymmetry” only.",
+        "example_source": "information asymmetry in online marketplaces",
+        "example_select": ["information asymmetry"]
+      },
+      {
+        "id": "C",
+        "title": "Keep qualifiers that change identity",
+        "text": "If removing a qualifier would erase the distinction from another theoretical referent, keep the qualifier: “interpersonal trust”, “institutional trust”.",
+        "example_source": "interpersonal trust / institutional trust",
+        "example_select": ["interpersonal trust", "institutional trust"]
+      }
+    ],
+    "occurrence_rule": "Select one clear occurrence of each distinct concept in the paper. Repeated mentions of the same concept do not need to be highlighted again."
+  },
+
+  "same_concept": {
+    "term": "Same Concept",
+    "definition": "Two expressions refer to the same concept when, in their scientific contexts, they denote the same reusable scientific referent and can be represented as a single concept identity without eliminating a theoretically meaningful distinction.",
+    "emphasis": "Same concept does not mean merely similar, related, or belonging to the same topic.",
+    "decisive_test": {
+      "name": "Collapse test",
+      "text": "Would collapsing these two expressions into a single node in a scientific concept inventory erase a meaningful distinction between what researchers are referring to?",
+      "no": "No → Same concept is possible.",
+      "yes": "Yes → Different concepts."
+    },
+    "same_examples": [
+      { "a": "information asymmetry", "b": "asymmetric information", "why": "Different surface form, same scientific referent." },
+      { "a": "word-of-mouth", "b": "word of mouth", "why": "Orthographic variant only." },
+      { "a": "Nash equilibrium in communication games", "b": "Nash equilibrium in bargaining settings", "why": "The differing part is only the application setting (scope); the concept identity is Nash equilibrium." }
+    ],
+    "different_criteria": [
+      { "id": "BN", "title": "Broader / narrower", "text": "One expression is more general than the other.", "example": "equilibrium vs. perfect Bayesian equilibrium" },
+      { "id": "PW", "title": "Part / whole", "text": "One is a constituent of the other." },
+      { "id": "RE", "title": "Related but distinct", "text": "Strongly associated in the same literature, but separate referents." },
+      { "id": "IDQ", "title": "Identity-defining modifier", "text": "Removing the modifier would erase an important theoretical distinction.", "example": "interpersonal trust vs. institutional trust" }
+    ]
+  },
+
+  "he1": {
+    "task_question": "Does the measurement adequately represent the reusable scientific concepts present in a paper?",
+    "instruction": "Read the title and abstract, then highlight each distinct scientific concept in the abstract by selecting it with your mouse.",
+    "purpose_for_annotator": "You are identifying the scientific concepts a paper contains. You are not evaluating any system output."
+  },
+
+  "he2": {
+    "task_question": "When should two scientific expressions be treated as one concept identity?",
+    "primary_question": "Do these expressions refer to the same scientific concept in the contexts shown?",
+    "primary_options": [
+      { "value": "SAME", "label": "Same concept" },
+      { "value": "DIFFERENT", "label": "Different concepts" },
+      { "value": "CANNOT", "label": "Cannot determine from the provided information" }
+    ],
+    "secondary_question": "Which best describes their relationship?",
+    "secondary_options": [
+      { "value": "BN", "label": "One is broader or narrower than the other" },
+      { "value": "PW", "label": "One is part of the other" },
+      { "value": "RE", "label": "Related but distinct" },
+      { "value": "UN", "label": "Unrelated" },
+      { "value": "CANNOT", "label": "Cannot determine" }
+    ],
+    "direction_question": "Which concept is broader (or: which is the whole)?",
+    "direction_options": [
+      { "value": "A", "label": "The left one" },
+      { "value": "B", "label": "The right one" },
+      { "value": "CANNOT", "label": "Cannot determine" }
+    ]
+  }
+}

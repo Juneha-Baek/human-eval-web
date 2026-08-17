@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coordinator — Concept Measurement Study</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">Coordinator console<small>HUMAN EVALUATION 1 &amp; 2</small></div>
+  <nav id="nav">
+    <a href="#overview">Progress</a>
+    <a href="#reliability">Reliability</a>
+    <a href="#he1">HE1 reconciliation</a>
+    <a href="#he2">HE2 adjudication</a>
+    <a href="#export">Export</a>
+  </nav>
+  <div class="spacer"></div>
+  <a class="small muted" href="/" style="text-decoration:none">Annotator view →</a>
+</div>
+
+<div class="wrap wide" id="root"></div>
+
+<div id="login" class="wrap narrow" style="padding-top:80px;display:none">
+  <div class="panel">
+    <h1>Coordinator access</h1>
+    <p class="small muted">Enter the admin token from <span class="mono">config.json</span>.</p>
+    <label class="field"><span>Admin token</span><input type="password" id="tok"></label>
+    <div class="err" id="lerr"></div>
+    <button class="primary" id="lgo">Sign in</button>
+  </div>
+</div>
+
+<script src="js/common.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

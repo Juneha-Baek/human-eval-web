@@ -1,0 +1,24 @@
+{
+  "allocation": {
+    "accounting": 10,
+    "economics": 10,
+    "finance": 10,
+    "info_systems": 9,
+    "management_other": 12,
+    "marketing": 10,
+    "ops_or": 11
+  },
+  "corpus_field_weights": {
+    "accounting": 0.0987283971597668,
+    "economics": 0.11513879755580349,
+    "finance": 0.1048167222053923,
+    "info_systems": 0.038960847045610716,
+    "management_other": 0.37902778906613666,
+    "marketing": 0.10243015789745902,
+    "ops_or": 0.16089728906983103
+  },
+  "density_cuts": [
+    5,
+    7
+  ]
+}

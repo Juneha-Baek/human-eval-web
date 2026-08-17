@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Training — Concept Measurement Study</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div id="bar"></div>
+<div class="wrap narrow">
+  <h1>Training</h1>
+  <p class="lede">Ten worked examples. Answer each one, then read the explanation.
+  Feedback is given here only — during the main tasks there is none.</p>
+  <div class="progress-line" style="margin:16px 0 20px">
+    <span id="ptxt" class="mono">0 / 0</span>
+    <div class="bar"><i id="pbar" style="width:0%"></i></div>
+  </div>
+  <div id="items"></div>
+  <div class="panel" id="finish" style="display:none">
+    <div class="row">
+      <div style="flex:1">
+        <strong>Training complete</strong>
+        <div class="small muted" id="score"></div>
+      </div>
+      <button class="primary" id="done">Start Evaluation 1</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/common.js"></script>
+<script>
+let ITEMS = [], ME = null;
+
+function renderItem(it, i) {
+  const ans = it.answered;
+  const opts = it.options.map(o => {
+    const isChosen = ans && ans.choice === o.value;
+    const isRight = ans && o.value === ans.answer;
+    let style = '';
+    if (ans && isRight) style = 'border-color:var(--ok);background:var(--a-soft)';
+    else if (isChosen) style = 'border-color:var(--danger);background:#f8ebe8';
+    return `<label class="${isChosen ? 'sel' : ''}" style="${style}">
+        <input type="radio" name="${it.id}" value="${esc(o.value)}" ${isChosen ? 'checked' : ''} ${ans ? 'disabled' : ''}>
+        <span style="font-family:var(--serif);font-size:15px">${esc(o.label)}</span>
+      </label>`;
+  }).join('');
+
+  const passage = it.passage
+    ? `<div class="abstract" style="font-size:16px;margin:10px 0 14px">${esc(it.passage)}</div>`
+    : '';
+  const pair = it.pair ? `
+    <div class="pair-grid" style="margin:10px 0 14px">
+      <div class="side" style="padding:14px 16px">
+        <div class="label" style="font-size:18px;margin:0 0 8px">${esc(it.pair.a)}</div>
+        <div class="ctx" style="font-size:14px">${esc(it.pair.a_ctx)}</div>
+      </div>
+      <div class="side" style="padding:14px 16px">
+        <div class="label" style="font-size:18px;margin:0 0 8px">${esc(it.pair.b)}</div>
+        <div class="ctx" style="font-size:14px">${esc(it.pair.b_ctx)}</div>
+      </div>
+    </div>` : '';
+
+  const feedback = ans ? `
+    <div class="panel tight" style="margin-top:12px;background:${ans.correct ? 'var(--a-soft)' : '#fdf3f0'};border-color:${ans.correct ? '#bcd9c9' : '#e8cec7'}">
+      <strong>${ans.correct ? 'Correct' : 'Not quite'}</strong>
+      <div class="small" style="margin-top:5px">${esc(ans.explanation)}</div>
+    </div>` : '';
+
+  return `<div class="panel" id="item-${it.id}">
+    <div class="row" style="margin-bottom:8px">
+      <span class="pill grey">${esc(it.block)}</span>
+      <span class="small muted">Example ${i + 1} of ${ITEMS.length}</span>
+    </div>
+    <div class="small muted">${esc(it.stem)}</div>
+    ${passage}${pair}
+    <div style="font-weight:600;margin:6px 0 10px">${esc(it.question)}</div>
+    <div class="radio-list">${opts}</div>
+    ${feedback}
+  </div>`;
+}
+
+function updateProgress() {
+  const n = ITEMS.filter(i => i.answered).length;
+  document.getElementById('ptxt').textContent = `${n} / ${ITEMS.length}`;
+  document.getElementById('pbar').style.width = (100 * n / ITEMS.length) + '%';
+  const allDone = n === ITEMS.length;
+  document.getElementById('finish').style.display = allDone ? '' : 'none';
+  if (allDone) {
+    const correct = ITEMS.filter(i => i.answered && i.answered.correct).length;
+    document.getElementById('score').textContent =
+      `${correct} of ${ITEMS.length} answered correctly. Re-read the guidelines if any explanation surprised you.`;
+  }
+}
+
+function render() {
+  document.getElementById('items').innerHTML = ITEMS.map(renderItem).join('');
+  document.querySelectorAll('input[type=radio]').forEach(r => {
+    r.onchange = async () => {
+      const it = ITEMS.find(x => x.id === r.name);
+      if (it.answered) return;
+      const res = await apiPost('/api/training/answer', { id: it.id, choice: r.value });
+      it.answered = { choice: r.value, correct: res.correct, answer: res.answer, explanation: res.explanation };
+      render();
+      updateProgress();
+      document.getElementById('item-' + it.id).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    };
+  });
+  updateProgress();
+}
+
+document.getElementById('done').onclick = async () => {
+  await apiPost('/api/training/complete');
+  location.href = 'he1.html';
+};
+
+(async function () {
+  ME = await requireSession();
+  if (!ME) return;
+  document.getElementById('bar').innerHTML = topbar('training.html', ME);
+  const t = await apiGet('/api/training/items');
+  ITEMS = t.items;
+  render();
+})();
+</script>
+</body>
+</html>

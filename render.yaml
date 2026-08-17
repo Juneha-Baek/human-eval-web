@@ -1,0 +1,30 @@
+# Render Blueprint — deploy with "New +" -> "Blueprint" and point it at this repo.
+#
+# NOTE: the persistent disk below requires a paid instance type (Starter).
+# Render's free instances have no disk and sleep when idle, which would discard
+# every annotation. Do not downgrade `plan` unless the storage layer is moved
+# to a database.
+
+services:
+  - type: web
+    name: human-eval-web
+    runtime: node
+    plan: starter
+    region: singapore          # closest Render region to Korea
+    buildCommand: node --check server.js
+    startCommand: node server.js
+    healthCheckPath: /api/config
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATA_DIR          # all annotations live on the mounted disk
+        value: /var/data
+      - key: ADMIN_TOKEN       # set in the Render dashboard, not in the repo
+        sync: false
+      - key: ACCESS_CODE       # set in the Render dashboard, not in the repo
+        sync: false
+    disk:
+      name: he-data
+      mountPath: /var/data
+      sizeGB: 1

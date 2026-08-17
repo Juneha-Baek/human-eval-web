@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Task complete</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div id="bar"></div>
+<div class="wrap narrow" style="padding-top:70px">
+  <div class="panel" style="text-align:center;padding:44px 30px">
+    <div class="pill ok" style="font-size:12px">Complete</div>
+    <h1 style="margin-top:14px" id="h"></h1>
+    <p class="lede" id="sub"></p>
+    <div class="row" style="justify-content:center;margin-top:22px" id="actions"></div>
+  </div>
+</div>
+<script src="js/common.js"></script>
+<script>
+(async function () {
+  const me = await requireSession();
+  if (!me) return;
+  document.getElementById('bar').innerHTML = topbar('', me);
+  const task = new URLSearchParams(location.search).get('task') || 'he1';
+  const h = document.getElementById('h'), sub = document.getElementById('sub'), act = document.getElementById('actions');
+  if (task === 'he1' && !me.he2.finished) {
+    h.textContent = 'Evaluation 1 finished';
+    sub.textContent = `You annotated ${me.he1.total} abstracts. Evaluation 2 is now open: ${me.he2.total} pairs of expressions.`;
+    act.innerHTML = `<a class="btn primary" href="he2.html">Start Evaluation 2</a><a class="btn" href="/">Overview</a>`;
+  } else if (me.he1.finished && me.he2.finished) {
+    h.textContent = 'All tasks finished';
+    sub.textContent = 'Thank you — your annotations are saved. You may close this window. Let the coordinator know you are done.';
+    act.innerHTML = `<a class="btn" href="/">Overview</a>`;
+  } else {
+    h.textContent = 'Saved';
+    sub.textContent = 'Your work is stored. You can continue whenever you like.';
+    act.innerHTML = `<a class="btn primary" href="/">Back to overview</a>`;
+  }
+})();
+</script>
+</body>
+</html>

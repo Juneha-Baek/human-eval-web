@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Human Annotation Study — Scientific Concept Measurement</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div class="wrap narrow" style="padding-top:64px">
+
+  <div id="signin">
+    <div style="text-align:center;margin-bottom:26px">
+      <div class="pill grey" id="protoPill">PROTOCOL</div>
+      <h1 style="font-size:29px;margin-top:12px">Human Annotation Study</h1>
+      <p class="lede">Scientific Concept Measurement</p>
+    </div>
+
+    <div class="panel">
+      <p>This study collects human judgments about the scientific concepts contained in
+      research abstracts, and about when two scientific expressions should be treated as
+      <em>one and the same concept</em>.</p>
+      <p class="small muted">You will work through two tasks. Everything is saved automatically;
+      you may stop at any point and continue later with the same ID.</p>
+
+      <label class="field" id="codeField" style="margin-top:18px;display:none">
+        <span>Access code</span>
+        <input type="text" id="acode" placeholder="from your invitation" autocomplete="off" spellcheck="false">
+      </label>
+
+      <label class="field" style="margin-top:18px">
+        <span>Annotator ID</span>
+        <input type="text" id="aid" placeholder="e.g. A01" autocomplete="off" spellcheck="false">
+      </label>
+      <div class="err" id="err"></div>
+      <button class="primary" id="go" style="width:100%">Continue</button>
+      <p class="small muted" style="margin-top:14px;margin-bottom:0">
+        Use the ID assigned to you by the study coordinator. Re-entering the same ID resumes your session.
+      </p>
+    </div>
+    <p class="small muted" style="text-align:center"><a href="admin.html">Coordinator access</a></p>
+  </div>
+
+  <div id="consent" style="display:none">
+    <h1>Consent to participate</h1>
+    <div class="panel">
+      <h3>What this study is</h3>
+      <p>You are asked to read research abstracts and pairs of scientific expressions and to
+      record your judgments about the scientific concepts they refer to. There are no correct
+      answers supplied by any automated system; your judgments are the measurement.</p>
+
+      <h3>What is recorded</h3>
+      <p>Your annotator ID, your selections and judgments, the time spent on each item, and
+      timestamps. No personal data beyond the ID you were assigned is collected.</p>
+
+      <h3>How the data is used</h3>
+      <p>Aggregated and de-identified annotations are used to validate a scientific concept
+      measurement framework and may be reported in an academic publication and released as a
+      research dataset at the annotator-ID level.</p>
+
+      <h3>Voluntary participation</h3>
+      <p>Participation is voluntary. You may stop at any time; partially completed work is kept
+      unless you ask the coordinator to delete it.</p>
+
+      <label class="row" style="margin:18px 0 6px;align-items:flex-start;gap:10px">
+        <input type="checkbox" id="agree" style="width:auto;margin-top:4px">
+        <span>I have read the information above and agree to participate.</span>
+      </label>
+      <div class="err" id="cerr"></div>
+      <button class="primary" id="cgo" style="margin-top:12px">Agree and continue</button>
+      <button class="ghost" onclick="signOut()">Not now</button>
+    </div>
+  </div>
+
+  <div id="hub" style="display:none"></div>
+</div>
+
+<script src="js/common.js"></script>
+<script>
+let ME = null;
+
+function show(which) {
+  for (const id of ['signin', 'consent', 'hub']) {
+    document.getElementById(id).style.display = (id === which) ? '' : 'none';
+  }
+}
+
+function stepRow(n, title, desc, status, href, enabled) {
+  return `<div class="panel ${enabled ? '' : 'tight'}" style="${enabled ? '' : 'opacity:.6'}">
+    <div class="row">
+      <div style="flex:1">
+        <div class="row" style="gap:8px"><strong>${n}. ${esc(title)}</strong> ${status}</div>
+        <div class="small muted">${desc}</div>
+      </div>
+      ${enabled ? `<a class="btn primary" href="${href}">Open</a>` : `<span class="pill grey">Locked</span>`}
+    </div></div>`;
+}
+
+function renderHub() {
+  const m = ME;
+  const pct = t => t.total ? Math.round(100 * t.done / t.total) : 0;
+  const doneP = `<span class="pill ok">Complete</span>`;
+  const trainingStatus = m.training_done ? doneP
+    : `<span class="pill">${m.training_answered}/${m.training_total}</span>`;
+  const he1Status = m.he1.finished ? doneP : `<span class="pill">${m.he1.done}/${m.he1.total} · ${pct(m.he1)}%</span>`;
+  const he2Status = m.he2.finished ? doneP : `<span class="pill">${m.he2.done}/${m.he2.total} · ${pct(m.he2)}%</span>`;
+
+  document.getElementById('hub').innerHTML = `
+    <div style="margin-bottom:22px">
+      <h1>Welcome, ${esc(m.annotator_id)}</h1>
+      <p class="lede">Work through the steps in order. Progress is saved after every item.</p>
+    </div>
+    ${stepRow('0', 'Guidelines', 'The two fixed definitions used throughout the study. Read once, return any time.', `<span class="pill grey">Reference</span>`, 'guidelines.html', true)}
+    ${stepRow('1', 'Training', 'Ten worked examples with feedback. Required before the main tasks.', trainingStatus, 'training.html', true)}
+    ${stepRow('2', 'Human Evaluation 1 — Concept Coverage', 'Highlight the distinct scientific concepts in each abstract.', he1Status, 'he1.html', m.tasks_unlocked)}
+    ${stepRow('3', 'Human Evaluation 2 — Concept Identity', 'Judge whether two expressions refer to the same scientific concept.', he2Status, 'he2.html', m.tasks_unlocked && m.he2_unlocked)}
+    ${(!m.he2_unlocked && m.tasks_unlocked) ? `<p class="small muted">Evaluation 2 unlocks when Evaluation 1 is finished.</p>` : ''}
+    <div class="row" style="margin-top:20px">
+      <button class="ghost" onclick="signOut()">Sign out</button>
+    </div>`;
+  show('hub');
+}
+
+async function route() {
+  try {
+    ME = await apiGet('/api/me');
+  } catch (e) {
+    show('signin');
+    return;
+  }
+  document.body.insertAdjacentHTML('afterbegin', topbar('', ME));
+  if (ME.consent_required && !ME.consent_at) { show('consent'); return; }
+  renderHub();
+}
+
+document.getElementById('go').onclick = async () => {
+  const id = document.getElementById('aid').value.trim();
+  const err = document.getElementById('err');
+  err.textContent = '';
+  try {
+    ME = await apiPost('/api/login', {
+      annotator_id: id,
+      access_code: document.getElementById('acode').value
+    });
+    location.reload();
+  } catch (e) { err.textContent = e.message; }
+};
+for (const f of ['aid', 'acode']) {
+  document.getElementById(f).addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('go').click(); });
+}
+
+document.getElementById('cgo').onclick = async () => {
+  const cerr = document.getElementById('cerr');
+  if (!document.getElementById('agree').checked) { cerr.textContent = 'Please tick the box to continue.'; return; }
+  cerr.textContent = '';
+  ME = await apiPost('/api/consent');
+  renderHub();
+};
+
+apiGet('/api/config').then(c => {
+  document.getElementById('protoPill').textContent = 'PROTOCOL ' + c.protocol_version;
+  document.title = c.study_title;
+  if (c.require_access_code) {
+    document.getElementById('codeField').style.display = '';
+    document.getElementById('acode').focus();
+  } else {
+    document.getElementById('aid').focus();
+  }
+}).catch(() => {});
+
+route();
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "studyTitle": "Human Annotation Study — Scientific Concept Measurement",
+  "port": 8080,
+  "host": "0.0.0.0",
+  "adminToken": "CHANGE-ME-admin-token",
+  "accessCode": "",
+  "requireConsent": true,
+  "requireTraining": true,
+  "enforceTaskOrder": true,
+  "he1DuplicateRate": 0.06,
+  "he2DuplicateRate": 0.08,
+  "duplicateMinGap": 40,
+  "protocolVersion": "v1.0-frozen"
+}

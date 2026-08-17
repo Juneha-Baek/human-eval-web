@@ -1,0 +1,13 @@
+{
+  "name": "human-eval-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Annotation web app for Human Evaluation 1 (Concept Coverage) and Human Evaluation 2 (Concept Identity & Semantic Relation)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
