@@ -79,7 +79,8 @@
 
   "he1": {
     "task_question": "Does the measurement adequately represent the reusable scientific concepts present in a paper?",
-    "instruction": "Read the title and abstract, then highlight each distinct scientific concept in the abstract by selecting it with your mouse.",
+    "instruction": "Read the title and abstract, then record each distinct scientific concept: drag across it in the text, or type it in your own wording.",
+    "wording_rule": "You do not have to reuse the paper's wording. If the paper's phrasing is awkward or hides the concept, type the term you would use for the same referent — what is recorded is the concept, not the string.",
     "purpose_for_annotator": "You are identifying the scientific concepts a paper contains. You are not evaluating any system output."
   },
 

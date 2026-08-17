@@ -12,7 +12,7 @@
   <div class="row" style="margin-bottom:14px">
     <div style="flex:1">
       <h1 style="margin-bottom:2px">Human Evaluation 1 — Concept Coverage</h1>
-      <p class="lede small" style="margin:0">Highlight each distinct scientific concept in the abstract.</p>
+      <p class="lede small" style="margin:0">Record each distinct scientific concept in this paper — drag across it, or type it.</p>
     </div>
     <button class="small" id="helpBtn">Definition</button>
   </div>
@@ -47,23 +47,31 @@
     <div class="sticky-side">
       <div class="panel">
         <div class="row" style="margin-bottom:8px">
-          <strong style="flex:1">Selected concepts</strong>
+          <strong style="flex:1">Concepts in this paper</strong>
           <span class="pill grey" id="nSel">0</span>
         </div>
         <p class="small muted" id="emptyHint">
-          Drag across the abstract to select a concept. Click a highlight to remove it.
+          Drag across the abstract, or type the concept below in your own wording.
         </p>
         <ul class="concept-list" id="list"></ul>
+
+        <div class="row" style="margin-top:10px;gap:6px">
+          <input type="text" id="typeIn" placeholder="Type a concept and press Enter"
+                 autocomplete="off" spellcheck="false">
+          <button id="addBtn" title="Add">Add</button>
+        </div>
+        <p class="small muted" style="margin:6px 0 0">
+          You may reword the paper's terminology — what is recorded is the concept, not the string.
+        </p>
       </div>
 
       <div class="panel tight">
         <h3 style="margin-top:0">Reminders</h3>
         <ul class="small muted" style="margin:0;padding-left:18px">
           <li>Split claims: <em>the effect of X on Y</em> → <em>X</em>, <em>Y</em>.</li>
-          <li>Keep the minimal expression that preserves the concept.</li>
-          <li>Keep qualifiers that change the theoretical referent.</li>
+          <li>Drop the empirical setting; keep qualifiers that change the referent.</li>
           <li>Skip methods, data, samples and result talk.</li>
-          <li>One occurrence per distinct concept is enough.</li>
+          <li>One entry per distinct concept.</li>
         </ul>
       </div>
 

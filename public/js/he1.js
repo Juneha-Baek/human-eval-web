@@ -14,9 +14,11 @@ const TRIM_LEAD = /^[\s.,;:()\[\]"'“”…\-–—/]+/;
 const TRIM_TAIL = /[\s.,;:()\[\]"'“”…\-–—/]+$/;
 
 /* --------------------------------------------------------------- rendering */
+const hasSpan = a => Number.isInteger(a.start) && Number.isInteger(a.end);
+
 function renderAbstract() {
   const text = ITEM.paper.abstract || '';
-  const marks = ANN.slice().sort((a, b) => a.start - b.start);
+  const marks = ANN.filter(hasSpan).sort((a, b) => a.start - b.start);
   let html = '';
   let cursor = 0;
   for (const m of marks) {
@@ -36,14 +38,16 @@ function renderAbstract() {
 
 function renderList() {
   const ul = document.getElementById('list');
-  const sorted = ANN.slice().sort((a, b) => a.start - b.start);
+  const sorted = ANN.slice().sort((a, b) =>
+    (hasSpan(a) ? a.start : Infinity) - (hasSpan(b) ? b.start : Infinity));
   document.getElementById('nSel').textContent = ANN.length;
   document.getElementById('emptyHint').style.display = ANN.length ? 'none' : '';
   ul.innerHTML = sorted.map((a, i) => `
-    <li data-id="${esc(a.annotation_id)}">
+    <li data-id="${esc(a.annotation_id)}" style="${hasSpan(a) ? '' : 'background:#fff'}">
       <span class="idx">${i + 1}</span>
-      <span class="txt"><span class="lbl">${esc(a.label)}</span></span>
-      <button class="ghost small" data-act="edit" title="Edit the text of this concept">edit</button>
+      <span class="txt"><span class="lbl">${esc(a.label)}</span>${hasSpan(a) ? '' :
+        ' <span class="pill grey" style="font-size:10px;vertical-align:middle">typed</span>'}</span>
+      <button class="ghost small" data-act="edit" title="Edit the wording">edit</button>
       <button class="ghost small" data-act="del" title="Remove">×</button>
     </li>`).join('');
   ul.querySelectorAll('button').forEach(b => {
@@ -168,6 +172,23 @@ function onSelect() {
   renderList();
 }
 
+function addTyped() {
+  const input = document.getElementById('typeIn');
+  const label = input.value.trim();
+  if (label.length < 2) { input.focus(); return; }
+  const dup = ANN.find(a => a.label.trim().toLowerCase() === label.toLowerCase());
+  if (dup) { toast('That concept is already on the list.'); input.value = ''; return; }
+  ANN.push({
+    annotation_id: 'a' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36),
+    start: null, end: null, raw: '', label, created_at: new Date().toISOString()
+  });
+  input.value = '';
+  input.focus();
+  document.getElementById('noConcepts').checked = false;
+  markDirty();
+  renderList();
+}
+
 function removeAnn(id) {
   ANN = ANN.filter(a => a.annotation_id !== id);
   markDirty();
@@ -223,9 +244,12 @@ async function load(newIdx) {
   idx = Math.max(0, Math.min(STATE.progress.total - 1, newIdx));
   ITEM = await apiGet('/api/he1/item?idx=' + idx);
   ANN = (ITEM.saved && ITEM.saved.annotations || []).map(a => ({
-    annotation_id: a.annotation_id, start: a.span_start, end: a.span_end,
+    annotation_id: a.annotation_id,
+    start: Number.isInteger(a.span_start) ? a.span_start : null,
+    end: Number.isInteger(a.span_end) ? a.span_end : null,
     raw: a.raw_span, label: a.label, created_at: a.created_at
   }));
+  document.getElementById('typeIn').value = '';
   document.getElementById('title').textContent = ITEM.paper.title;
   document.getElementById('meta').textContent = ITEM.paper.year ? `Published ${ITEM.paper.year}` : '';
   document.getElementById('noConcepts').checked = !!(ITEM.saved && ITEM.saved.no_concepts);
@@ -315,6 +339,10 @@ async function nextItem() {
   document.getElementById('notes').oninput = markDirty;
   document.getElementById('next').onclick = nextItem;
   document.getElementById('prev').onclick = async () => { await flush(false); load(idx - 1); };
+  document.getElementById('addBtn').onclick = addTyped;
+  document.getElementById('typeIn').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); addTyped(); }
+  });
 
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); nextItem(); }

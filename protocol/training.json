@@ -4,80 +4,52 @@
     {
       "id": "T01",
       "block": "Concept extraction",
-      "stem": "Sentence from an abstract:",
+      "stem": "From an abstract:",
       "passage": "We examine the effect of trust on technology adoption.",
       "question": "Which selection is correct?",
       "options": [
         { "value": "a", "label": "the effect of trust on technology adoption" },
-        { "value": "b", "label": "trust  +  technology adoption  (two separate selections)" },
+        { "value": "b", "label": "trust  +  technology adoption  (two separate concepts)" },
         { "value": "c", "label": "effect  +  trust  +  technology adoption" }
       ],
       "answer": "b",
-      "explanation": "Rule A. A relationship phrase is a claim, not a concept. Select the two independent referents separately. “effect” fails the independent-referent test — on its own it does not denote a recognizable scientific idea."
+      "explanation": "A relationship phrase is a claim, not a concept. Split it into its two referents. “effect” on its own denotes nothing another study could investigate."
     },
     {
       "id": "T02",
       "block": "Concept extraction",
-      "stem": "Sentence from an abstract:",
+      "stem": "From an abstract:",
       "passage": "We estimate the model using two-stage least squares on a sample of 412 respondents.",
-      "question": "Which expressions should be selected as scientific concepts?",
+      "question": "Which expressions are scientific concepts here?",
       "options": [
         { "value": "a", "label": "two-stage least squares" },
         { "value": "b", "label": "two-stage least squares  +  respondents" },
         { "value": "c", "label": "None of them" }
       ],
       "answer": "c",
-      "explanation": "“two-stage least squares” is an empirical method used to produce the result, not the focal object of scientific inquiry here, so it is excluded. “sample” and “respondents” are study apparatus, not reusable referents. (If a paper's focal contribution were the estimator itself, the method could be selected.)"
+      "explanation": "The estimator is a tool used to produce the result, not the object of inquiry; samples and respondents are study apparatus. A method counts only when the paper is about the method."
     },
     {
       "id": "T03",
       "block": "Concept extraction",
-      "stem": "Sentence from an abstract:",
-      "passage": "We study information asymmetry in online marketplaces.",
-      "question": "What is the correct span, assuming “online marketplaces” is only the empirical setting?",
+      "stem": "From an abstract:",
+      "passage": "We study institutional trust in online marketplaces.",
+      "question": "What is the concept, assuming the marketplace is only the empirical setting?",
       "options": [
-        { "value": "a", "label": "information asymmetry in online marketplaces" },
-        { "value": "b", "label": "information asymmetry" },
-        { "value": "c", "label": "information asymmetry  +  online marketplaces" }
+        { "value": "a", "label": "institutional trust in online marketplaces" },
+        { "value": "b", "label": "institutional trust" },
+        { "value": "c", "label": "trust" }
       ],
       "answer": "b",
-      "explanation": "Rule B. Select the minimal expression that preserves the concept. The application setting is scope, not part of the concept identity. (Selecting “online marketplaces” separately would only be correct if the paper treats it as a substantive phenomenon in its own right.)"
+      "explanation": "Drop the setting — it is scope, not identity. But keep “institutional”: without it the distinction from interpersonal trust disappears."
     },
     {
       "id": "T04",
-      "block": "Concept extraction",
-      "stem": "Sentence from an abstract:",
-      "passage": "Institutional trust, unlike interpersonal trust, is built through formal guarantees.",
-      "question": "Which selection is correct?",
-      "options": [
-        { "value": "a", "label": "trust  (once)" },
-        { "value": "b", "label": "institutional trust  +  interpersonal trust" },
-        { "value": "c", "label": "institutional trust  +  interpersonal trust  +  formal guarantees" }
-      ],
-      "answer": "b",
-      "explanation": "Rule C. The qualifiers are identity-defining: removing them would erase the theoretical distinction the sentence is built on. Both qualified expressions are selected. (“formal guarantees” here is a mechanism description within the claim rather than a distinct reusable referent in this sentence — but borderline judgments like this are expected; the primary requirement is that the two trust concepts are captured.)"
-    },
-    {
-      "id": "T05",
-      "block": "Concept extraction",
-      "stem": "Sentence from an abstract:",
-      "passage": "We adopt a Penrosean perspective to study the effect of rapid international expansion on the subsequent divestment of international operations.",
-      "question": "Which set best follows the protocol?",
-      "options": [
-        { "value": "a", "label": "Penrosean perspective  +  rapid international expansion  +  divestment of international operations" },
-        { "value": "b", "label": "the effect of rapid international expansion on the subsequent divestment of international operations" },
-        { "value": "c", "label": "Penrosean perspective only — the rest is the study's claim" }
-      ],
-      "answer": "a",
-      "explanation": "A theoretical perspective is a concept. The claim is split into its two independent referents. Each survives the independent-referent test: another study could investigate rapid international expansion or divestment of international operations on its own."
-    },
-    {
-      "id": "T06",
       "block": "Concept identity",
-      "stem": "Two expressions in their contexts:",
+      "stem": "Two expressions in context:",
       "pair": {
         "a": "information asymmetry",
-        "a_ctx": "…problems of information asymmetry between buyers and sellers reduce market efficiency…",
+        "a_ctx": "…problems of information asymmetry between buyers and sellers…",
         "b": "asymmetric information",
         "b_ctx": "…in markets with asymmetric information, the less informed party…"
       },
@@ -88,83 +60,45 @@
         { "value": "CANNOT", "label": "Cannot determine" }
       ],
       "answer": "SAME",
-      "explanation": "Same scientific referent under a different surface form. Collapsing them into one node erases no meaningful distinction."
+      "explanation": "Same referent, different surface form. Merging them into one node erases nothing."
     },
     {
-      "id": "T07",
+      "id": "T05",
       "block": "Concept identity",
-      "stem": "Two expressions in their contexts:",
+      "stem": "Two expressions in context:",
       "pair": {
         "a": "equilibrium",
         "a_ctx": "…we characterize the equilibrium of the game…",
         "b": "perfect Bayesian equilibrium",
         "b_ctx": "…we restrict attention to perfect Bayesian equilibrium in this signaling model…"
       },
-      "question": "Same or different? If different, what relation?",
+      "question": "Same or different?",
       "options": [
         { "value": "SAME", "label": "Same concept" },
         { "value": "DIFFERENT_BN", "label": "Different — one is broader or narrower" },
         { "value": "DIFFERENT_RE", "label": "Different — related but distinct" }
       ],
       "answer": "DIFFERENT_BN",
-      "explanation": "A solution-concept refinement is strictly narrower than the general notion. Collapsing them would erase a distinction researchers actively rely on. Direction: “equilibrium” is the broader one."
+      "explanation": "A refinement is strictly narrower than the general notion — a distinction researchers rely on. “equilibrium” is the broader one."
     },
     {
-      "id": "T08",
+      "id": "T06",
       "block": "Concept identity",
-      "stem": "Two expressions in their contexts:",
-      "pair": {
-        "a": "Nash equilibrium in communication games",
-        "a_ctx": "…the Nash equilibrium in these communication games is not unique…",
-        "b": "Nash equilibrium in bargaining settings",
-        "b_ctx": "…we compute the Nash equilibrium in bargaining settings with incomplete information…"
-      },
-      "question": "Same or different?",
-      "options": [
-        { "value": "SAME", "label": "Same concept" },
-        { "value": "DIFFERENT", "label": "Different concepts" },
-        { "value": "CANNOT", "label": "Cannot determine" }
-      ],
-      "answer": "SAME",
-      "explanation": "The differing material is only the application setting. The concept identity in both is Nash equilibrium, so a single node loses nothing theoretically meaningful."
-    },
-    {
-      "id": "T09",
-      "block": "Concept identity",
-      "stem": "Two expressions in their contexts:",
-      "pair": {
-        "a": "audit committee",
-        "a_ctx": "…the audit committee meets separately with the external auditor…",
-        "b": "board of directors",
-        "b_ctx": "…the board of directors is responsible for monitoring management…"
-      },
-      "question": "Same or different? If different, what relation?",
-      "options": [
-        { "value": "SAME", "label": "Same concept" },
-        { "value": "DIFFERENT_PW", "label": "Different — one is part of the other" },
-        { "value": "DIFFERENT_UN", "label": "Different — unrelated" }
-      ],
-      "answer": "DIFFERENT_PW",
-      "explanation": "An audit committee is a constituent body of the board, not a broader-or-narrower version of the same referent. This is part/whole. Direction: the board of directors is the whole."
-    },
-    {
-      "id": "T10",
-      "block": "Concept identity",
-      "stem": "Two expressions in their contexts:",
+      "stem": "Two expressions in context:",
       "pair": {
         "a": "organizational commitment",
         "a_ctx": "…employees reporting high organizational commitment were less likely to leave…",
         "b": "job satisfaction",
         "b_ctx": "…job satisfaction was measured with a five-item scale…"
       },
-      "question": "Same or different? If different, what relation?",
+      "question": "Same or different?",
       "options": [
         { "value": "SAME", "label": "Same concept" },
         { "value": "DIFFERENT_RE", "label": "Different — related but distinct" },
         { "value": "DIFFERENT_BN", "label": "Different — one is broader or narrower" }
       ],
       "answer": "DIFFERENT_RE",
-      "explanation": "These are strongly associated in the same literature and often correlated, but they are separate theoretical referents — neither contains nor generalizes the other. Strong association is not identity."
+      "explanation": "Closely associated and often correlated, but neither contains nor generalizes the other. Strong association is not identity."
     }
   ]
 }

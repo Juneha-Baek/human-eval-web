@@ -144,26 +144,39 @@ async function viewHE1Detail(pid) {
   const d = await apiGet('/api/admin/he1/reconcile?paper_id=' + encodeURIComponent(pid));
   const text = d.paper.abstract;
   const anns = d.annotators;
-  const layers = anns.map((a, i) => ({ key: i, spans: a.annotations }));
+  const isSpan = s => Number.isInteger(s.start) && Number.isInteger(s.end);
+  const layers = anns.map((a, i) => ({ key: i, spans: a.annotations.filter(isSpan) }));
+  const order = (a, b) => (isSpan(a) ? a.start : Infinity) - (isSpan(b) ? b.start : Infinity);
+  const keyOf = s => isSpan(s) ? `s:${s.start}:${s.end}` : `t:${(s.label || '').trim().toLowerCase()}`;
 
-  // candidate pool: union of spans, identical ranges merged
+  // candidate pool: union of both annotators' entries; identical ranges (or
+  // identical typed wording) merged into one row
   const map = new Map();
   anns.forEach(a => a.annotations.forEach(s => {
-    const k = s.start + ':' + s.end;
-    if (!map.has(k)) map.set(k, { start: s.start, end: s.end, text: s.text, label: s.label, sources: [] });
+    const k = keyOf(s);
+    if (!map.has(k)) {
+      map.set(k, {
+        start: isSpan(s) ? s.start : null, end: isSpan(s) ? s.end : null,
+        text: s.text || '', label: s.label, typed: !isSpan(s), sources: []
+      });
+    }
     map.get(k).sources.push(a.annotator_id);
   }));
-  let candidates = [...map.values()].sort((a, b) => a.start - b.start);
+  let candidates = [...map.values()].sort(order);
   const gold = d.gold ? d.gold.gold : null;
-  const inGold = s => !gold ? s.sources.length > 1 : gold.some(g => g.start === s.start && g.end === s.end);
-  candidates.forEach(c => { c.selected = inGold(c); });
+  candidates.forEach(c => {
+    c.selected = !gold ? c.sources.length > 1 : gold.some(g => keyOf(g) === keyOf(c));
+  });
   if (gold) {
     for (const g of gold) {
-      if (!candidates.some(c => c.start === g.start && c.end === g.end)) {
-        candidates.push({ start: g.start, end: g.end, text: g.text, label: g.label, sources: ['adjudicator'], selected: true });
+      if (!candidates.some(c => keyOf(c) === keyOf(g))) {
+        candidates.push({
+          start: Number.isInteger(g.start) ? g.start : null, end: Number.isInteger(g.end) ? g.end : null,
+          text: g.text || '', label: g.label, typed: !isSpan(g), sources: ['adjudicator'], selected: true
+        });
       }
     }
-    candidates.sort((a, b) => a.start - b.start);
+    candidates.sort(order);
   }
 
   function renderCandidates() {
@@ -171,7 +184,7 @@ async function viewHE1Detail(pid) {
       <li>
         <input type="checkbox" data-i="${i}" ${c.selected ? 'checked' : ''} style="width:auto;margin-top:5px">
         <span class="txt"><input type="text" data-lbl="${i}" value="${esc(c.label || c.text)}"></span>
-        <span class="small muted" style="min-width:90px;text-align:right">${c.sources.map(s => esc(s)).join(', ')}</span>
+        <span class="small muted" style="min-width:90px;text-align:right">${c.sources.map(s => esc(s)).join(', ')}${c.typed ? ' <span class="pill grey" style="font-size:10px">typed</span>' : ''}</span>
       </li>`).join('');
     document.querySelectorAll('#cands input[type=checkbox]').forEach(cb => {
       cb.onchange = () => { candidates[Number(cb.dataset.i)].selected = cb.checked; };
@@ -201,6 +214,10 @@ async function viewHE1Detail(pid) {
           <div class="row" style="margin-bottom:8px"><strong style="flex:1">Consensus gold set</strong>
             <span class="pill grey" id="goldN"></span></div>
           <ul class="concept-list" id="cands"></ul>
+          <div class="row" style="margin:8px 0 4px;gap:6px">
+            <input type="text" id="goldIn" placeholder="Add a concept in your own wording" autocomplete="off">
+            <button id="addGold">Add</button>
+          </div>
           <label class="field" style="margin-top:10px"><span>Adjudicator</span>
             <input type="text" id="adj" value="${esc(d.gold ? d.gold.adjudicator : '')}" placeholder="your name or ID"></label>
           <label class="field"><span>Note</span><textarea id="gnote">${esc(d.gold ? d.gold.note : '')}</textarea></label>
@@ -238,10 +255,23 @@ async function viewHE1Detail(pid) {
     const raw = text.slice(s, e).trim();
     if (raw.length < 2) return;
     const start = s + (text.slice(s, e).length - text.slice(s, e).replace(/^\s+/, '').length);
-    candidates.push({ start, end: start + raw.length, text: raw, label: raw, sources: ['adjudicator'], selected: true });
-    candidates.sort((a, b) => a.start - b.start);
+    candidates.push({ start, end: start + raw.length, text: raw, label: raw, typed: false, sources: ['adjudicator'], selected: true });
+    candidates.sort(order);
     renderCandidates();
   }, 0));
+
+  document.getElementById('addGold').onclick = () => {
+    const input = document.getElementById('goldIn');
+    const label = input.value.trim();
+    if (label.length < 2) return;
+    candidates.push({ start: null, end: null, text: '', label, typed: true, sources: ['adjudicator'], selected: true });
+    candidates.sort(order);
+    input.value = '';
+    renderCandidates();
+  };
+  document.getElementById('goldIn').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); document.getElementById('addGold').click(); }
+  });
 
   document.getElementById('saveGold').onclick = async () => {
     const goldSpans = candidates.filter(c => c.selected).map(c => ({ start: c.start, end: c.end, label: c.label, source: c.sources.join('+') }));

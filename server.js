@@ -246,20 +246,26 @@ function he1Save(id, body) {
   const anns = Array.isArray(body.annotations) ? body.annotations : [];
   const paper = data.paperById.get(el.item_id);
   const abs = paper.abstract || '';
+  // Two kinds of annotation: a span dragged in the abstract, and a concept the
+  // annotator typed in their own wording (no offsets — the concept is what is
+  // recorded, not the string).
   const clean = [];
   anns.forEach((a, i) => {
     const s = Number(a.start), e = Number(a.end);
-    if (!Number.isInteger(s) || !Number.isInteger(e) || s < 0 || e > abs.length || e <= s) return;
+    const hasSpan = Number.isInteger(s) && Number.isInteger(e) && s >= 0 && e <= abs.length && e > s;
+    const label = (a.label || (hasSpan ? abs.slice(s, e) : '')).toString().trim().slice(0, 300);
+    if (!hasSpan && !label) return;
     clean.push({
       annotation_id: a.annotation_id || `${el.item_id}#${idx}#${i}#${Date.now().toString(36)}`,
-      span_start: s,
-      span_end: e,
-      raw_span: abs.slice(s, e),
-      label: (a.label || abs.slice(s, e)).toString().slice(0, 300),
+      span_start: hasSpan ? s : null,
+      span_end: hasSpan ? e : null,
+      raw_span: hasSpan ? abs.slice(s, e) : '',
+      label,
+      source: hasSpan ? 'span' : 'typed',
       created_at: a.created_at || new Date().toISOString()
     });
   });
-  clean.sort((a, b) => a.span_start - b.span_start);
+  clean.sort((a, b) => (a.span_start === null ? Infinity : a.span_start) - (b.span_start === null ? Infinity : b.span_start));
 
   all[key] = Object.assign(prev, {
     paper_id: el.item_id,
@@ -466,8 +472,8 @@ function agreementReport() {
       .filter(r => r.completed_at);
     if (primary.length >= 2) {
       papersBoth++;
-      const A = (primary[0].annotations || []).map(a => ({ start: a.span_start, end: a.span_end }));
-      const B = (primary[1].annotations || []).map(a => ({ start: a.span_start, end: a.span_end }));
+      const A = (primary[0].annotations || []).map(a => ({ start: a.span_start, end: a.span_end, label: a.label }));
+      const B = (primary[1].annotations || []).map(a => ({ start: a.span_start, end: a.span_end, label: a.label }));
       const r = stats.spanSetAgreement(A, B);
       if (r.f1 !== null) f1s.push(r.f1);
     }
@@ -504,8 +510,8 @@ function agreementReport() {
       byPaperId[rec.paper_id].push(rec);
     }
     const dupF1 = Object.values(byPaperId).filter(v => v.length >= 2).map(v => {
-      const A = (v[0].annotations || []).map(x => ({ start: x.span_start, end: x.span_end }));
-      const B = (v[1].annotations || []).map(x => ({ start: x.span_start, end: x.span_end }));
+      const A = (v[0].annotations || []).map(x => ({ start: x.span_start, end: x.span_end, label: x.label }));
+      const B = (v[1].annotations || []).map(x => ({ start: x.span_start, end: x.span_end, label: x.label }));
       return stats.spanSetAgreement(A, B).f1;
     });
 
@@ -565,19 +571,23 @@ function exportHE1() {
       };
       const anns = rec.annotations || [];
       if (!anns.length) {
-        rows.push(Object.assign({ annotation_id: '', span_start: '', span_end: '', raw_span: '', edited_label: '', created_at: '' }, base));
+        rows.push(Object.assign({ annotation_id: '', span_start: '', span_end: '', raw_span: '', edited_label: '', entry_mode: '', created_at: '' }, base));
       } else {
         for (const an of anns) {
           rows.push(Object.assign({
-            annotation_id: an.annotation_id, span_start: an.span_start, span_end: an.span_end,
-            raw_span: an.raw_span, edited_label: an.label, created_at: an.created_at
+            annotation_id: an.annotation_id,
+            span_start: an.span_start === null || an.span_start === undefined ? '' : an.span_start,
+            span_end: an.span_end === null || an.span_end === undefined ? '' : an.span_end,
+            raw_span: an.raw_span, edited_label: an.label,
+            entry_mode: an.source || 'span',
+            created_at: an.created_at
           }, base));
         }
       }
     }
   }
   return toCSV(rows, ['annotator_id', 'paper_id', 'annotation_id', 'span_start', 'span_end', 'raw_span', 'edited_label',
-    'response_time_ms', 'created_at', 'queue_idx', 'is_duplicate_pass', 'no_concepts', 'notes', 'completed_at', 'updated_at']);
+    'entry_mode', 'response_time_ms', 'created_at', 'queue_idx', 'is_duplicate_pass', 'no_concepts', 'notes', 'completed_at', 'updated_at']);
 }
 
 function exportHE2(includeHidden) {
@@ -618,7 +628,10 @@ function exportHE1Gold() {
     if (!g) continue;
     for (const s of g.gold || []) {
       rows.push({
-        paper_id: g.paper_id, span_start: s.start, span_end: s.end, raw_span: s.text,
+        paper_id: g.paper_id,
+        span_start: s.start === null || s.start === undefined ? '' : s.start,
+        span_end: s.end === null || s.end === undefined ? '' : s.end,
+        raw_span: s.text || '',
         gold_label: s.label || s.text, source: s.source || '', adjudicator: g.adjudicator || '',
         adjudicated_at: g.updated_at || ''
       });
@@ -748,7 +761,11 @@ async function handleAPI(req, res, url) {
       const per = Object.entries(slot).map(([k, r]) => ({
         annotator_id: k, completed_at: r.completed_at || null, no_concepts: !!r.no_concepts,
         notes: r.notes || '',
-        annotations: (r.annotations || []).map(a => ({ start: a.span_start, end: a.span_end, text: a.raw_span, label: a.label }))
+        annotations: (r.annotations || []).map(a => ({
+          start: a.span_start === undefined ? null : a.span_start,
+          end: a.span_end === undefined ? null : a.span_end,
+          text: a.raw_span, label: a.label, source: a.source || 'span'
+        }))
       }));
       const gold = store.readJSON(store.p('gold', `he1_${encodeURIComponent(pid).replace(/[^A-Za-z0-9]/g, '_')}.json`), null);
       return sendJSON(res, 200, {
@@ -765,12 +782,18 @@ async function handleAPI(req, res, url) {
       const pp = data.paperById.get(pid);
       if (!pp) return sendJSON(res, 404, { error: 'unknown paper' });
       const file = store.p('gold', `he1_${encodeURIComponent(pid).replace(/[^A-Za-z0-9]/g, '_')}.json`);
-      const gold = (body.gold || []).map(s => ({
-        start: Number(s.start), end: Number(s.end),
-        text: pp.abstract.slice(Number(s.start), Number(s.end)),
-        label: (s.label || '').toString().slice(0, 300),
-        source: s.source || ''
-      })).filter(s => Number.isInteger(s.start) && Number.isInteger(s.end) && s.end > s.start);
+      const gold = (body.gold || []).map(s => {
+        const st = Number(s.start), en = Number(s.end);
+        const hasSpan = Number.isInteger(st) && Number.isInteger(en) && st >= 0 && en <= pp.abstract.length && en > st;
+        const label = (s.label || '').toString().trim().slice(0, 300);
+        return {
+          start: hasSpan ? st : null,
+          end: hasSpan ? en : null,
+          text: hasSpan ? pp.abstract.slice(st, en) : '',
+          label,
+          source: s.source || ''
+        };
+      }).filter(s => s.label || s.text);
       store.writeJSON(file, {
         paper_id: pid, gold, adjudicator: (body.adjudicator || 'admin').toString().slice(0, 60),
         note: (body.note || '').toString().slice(0, 2000), updated_at: new Date().toISOString()

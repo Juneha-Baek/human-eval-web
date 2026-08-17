@@ -9,14 +9,12 @@
 <body>
 <div id="bar"></div>
 <div class="wrap narrow">
-  <h1>Annotation guidelines</h1>
-  <p class="lede">Two definitions govern this study. They are fixed for the entire data collection
-  and are the measurement definitions the analysis relies on. Everything else is a boundary rule
-  that helps you apply them consistently.</p>
+  <h1>Guidelines</h1>
+  <p class="lede small">Two definitions govern the study. Everything else is a rule for applying them consistently.</p>
   <div id="body"></div>
-  <div class="row" style="margin-top:24px">
+  <div class="row" style="margin-top:22px">
     <a class="btn primary" href="training.html">Go to training</a>
-    <a class="btn" href="/">Back to overview</a>
+    <a class="btn" href="/">Overview</a>
   </div>
 </div>
 
@@ -29,77 +27,64 @@
   const P = await apiGet('/api/protocol');
   const sc = P.scientific_concept, sm = P.same_concept;
 
-  const rules = sc.boundary_rules.map(r => `
-    <div class="panel tight" style="margin-bottom:10px">
-      <div><strong>Rule ${r.id} — ${esc(r.title)}</strong></div>
-      <div class="small" style="margin-top:4px">${esc(r.text)}</div>
-      <div style="margin-top:8px" class="small muted">Source: <span style="font-family:var(--serif)">${esc(r.example_source)}</span></div>
-      <div>${r.example_select.map(x => `<span class="example-good">${esc(x)}</span>`).join('')}</div>
-    </div>`).join('');
+  const rule = r => `<tr>
+      <td style="white-space:nowrap"><strong>${r.id}</strong></td>
+      <td>${esc(r.title)}<div class="small muted" style="font-family:var(--serif)">${esc(r.example_source)}
+        &nbsp;→&nbsp; ${r.example_select.map(x => `<span class="example-good">${esc(x)}</span>`).join('')}</div></td>
+    </tr>`;
 
-  const sameEx = sm.same_examples.map(e => `
-    <div class="panel tight" style="margin-bottom:8px">
-      <div style="font-family:var(--serif);font-size:15.5px">${esc(e.a)} &nbsp;↔&nbsp; ${esc(e.b)}</div>
-      <div class="small muted" style="margin-top:3px">${esc(e.why)}</div>
-    </div>`).join('');
+  const sameEx = sm.same_examples.map(e =>
+    `<tr><td style="font-family:var(--serif)">${esc(e.a)} ↔ ${esc(e.b)}</td>
+         <td class="small muted">${esc(e.why)}</td></tr>`).join('');
 
-  const diffCrit = sm.different_criteria.map(c => `
-    <div class="panel tight" style="margin-bottom:8px">
-      <div><strong>${esc(c.title)}</strong> <span class="pill grey">${esc(c.id)}</span></div>
-      <div class="small" style="margin-top:3px">${esc(c.text)}</div>
-      ${c.example ? `<div class="small muted" style="margin-top:4px;font-family:var(--serif)">${esc(c.example)}</div>` : ''}
-    </div>`).join('');
+  const diffCrit = sm.different_criteria.map(c =>
+    `<tr><td style="white-space:nowrap"><span class="pill grey">${esc(c.id)}</span></td>
+         <td>${esc(c.title)}${c.example ? ` <span class="small muted" style="font-family:var(--serif)">— ${esc(c.example)}</span>` : ''}</td></tr>`).join('');
 
   document.getElementById('body').innerHTML = `
     <h2>1 · What counts as a scientific concept</h2>
     <div class="definition">
       <div class="term">${esc(sc.term)}</div>
       <div>${esc(sc.definition)}</div>
-      <div style="margin-top:8px" class="small">${esc(sc.scope)}</div>
+      <div class="small" style="margin-top:6px">${esc(sc.scope)}</div>
+      <div class="small" style="margin-top:8px"><strong>Test.</strong> ${esc(sc.operational_test.text)}</div>
     </div>
 
-    <h3>${esc(sc.operational_test.name)}</h3>
-    <p style="font-family:var(--serif);font-size:16.5px">${esc(sc.operational_test.text)}</p>
+    <div class="panel tight">
+      <div>${sc.include_examples.map(x => `<span class="example-good">${esc(x)}</span>`).join('')}</div>
+      <div style="margin-top:4px">${sc.exclude_examples.map(x => `<span class="example-bad">${esc(x)}</span>`).join('')}</div>
+      <div class="small muted" style="margin-top:8px">${esc(sc.method_rule)}</div>
+    </div>
 
-    <h3>Include</h3>
-    <div>${sc.include_examples.map(x => `<span class="example-good">${esc(x)}</span>`).join('')}</div>
-    <h3>Exclude</h3>
-    <div>${sc.exclude_examples.map(x => `<span class="example-bad">${esc(x)}</span>`).join('')}</div>
-    <div class="hint" style="margin-top:12px">${esc(sc.method_rule)}</div>
-
-    <h2>Boundary rules</h2>
-    ${rules}
-    <div class="hint">${esc(sc.occurrence_rule)}</div>
+    <div class="panel tight"><table><tbody>${sc.boundary_rules.map(rule).join('')}</tbody></table></div>
+    <p class="small muted">${esc(sc.occurrence_rule)} ${esc(sc.wording_rule || '')}</p>
 
     <h2>2 · When two expressions are the same concept</h2>
     <div class="definition">
       <div class="term">${esc(sm.term)}</div>
       <div>${esc(sm.definition)}</div>
-      <div style="margin-top:8px"><strong>${esc(sm.emphasis)}</strong></div>
+      <div style="margin-top:6px"><strong>${esc(sm.emphasis)}</strong></div>
+      <div class="small" style="margin-top:8px"><strong>Test.</strong> ${esc(sm.decisive_test.text)}
+        <br>${esc(sm.decisive_test.no)} &nbsp;·&nbsp; ${esc(sm.decisive_test.yes)}</div>
     </div>
 
-    <h3>${esc(sm.decisive_test.name)}</h3>
-    <p style="font-family:var(--serif);font-size:16.5px">${esc(sm.decisive_test.text)}</p>
-    <p class="small"><span class="pill ok">No</span> ${esc(sm.decisive_test.no)}<br>
-       <span class="pill warn">Yes</span> ${esc(sm.decisive_test.yes)}</p>
-
-    <h3>Same</h3>
-    ${sameEx}
-    <h3>Different — any one of these is enough</h3>
-    ${diffCrit}
+    <div class="panel tight">
+      <h3 style="margin-top:0">Same</h3>
+      <table><tbody>${sameEx}</tbody></table>
+      <h3>Different — any one of these</h3>
+      <table><tbody>${diffCrit}</tbody></table>
+    </div>
 
     <h2>3 · The two tasks</h2>
-    <div class="panel tight" style="margin-bottom:10px">
-      <div><strong>Human Evaluation 1 — Concept Coverage</strong></div>
-      <p class="small" style="margin:6px 0 0">${esc(P.he1.instruction)} ${esc(P.he1.purpose_for_annotator)}</p>
-    </div>
     <div class="panel tight">
-      <div><strong>Human Evaluation 2 — Concept Identity</strong></div>
-      <p class="small" style="margin:6px 0 0">${esc(P.he2.primary_question)} If you answer <em>different</em>,
-      you are then asked which relation best describes the pair. Judge the expressions <strong>as used in the
-      contexts shown</strong>, not as isolated strings.</p>
+      <table><tbody>
+        <tr><td style="white-space:nowrap"><strong>Evaluation 1</strong></td>
+            <td>${esc(P.he1.instruction)}</td></tr>
+        <tr><td style="white-space:nowrap"><strong>Evaluation 2</strong></td>
+            <td>${esc(P.he2.primary_question)} If different, you are asked which relation fits. Judge the expressions as used in the contexts shown.</td></tr>
+      </tbody></table>
     </div>
-    <p class="small muted" style="margin-top:16px">Protocol ${esc(P.version)} · frozen ${esc(P.frozen_at)}</p>`;
+    <p class="small muted">Protocol ${esc(P.version)} · frozen ${esc(P.frozen_at)}</p>`;
 })();
 </script>
 </body>
